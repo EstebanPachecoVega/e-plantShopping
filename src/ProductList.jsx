@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux'; // Para despachar acciones de Redux
 import { addItem } from './CartSlice';    // Acción importada desde CartSlice
+import { useSelector } from 'react-redux'; // Agregar esta línea
 import './ProductList.css';
 import CartItem from './CartItem';
 
 function ProductList({ onHomeClick }) {
     const dispatch = useDispatch();
+    const cartItems = useSelector(state => state.cart.items); // Agregar esta línea
+
+    // Calcular el total de items en el carrito
+    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
     // Estado local para saber qué productos se han añadido (clave: nombre, valor: true/false)
     const [addedToCart, setAddedToCart] = useState({});
@@ -13,6 +18,15 @@ function ProductList({ onHomeClick }) {
     // Estado para controlar la visualización del carrito y la lista de plantas
     const [showCart, setShowCart] = useState(false);
     const [showPlants, setShowPlants] = useState(false);
+
+    useEffect(() => {
+        // Crear un objeto con todos los items que están en el carrito
+        const cartItemsMap = {};
+        cartItems.forEach(item => {
+            cartItemsMap[item.name] = true;
+        });
+        setAddedToCart(cartItemsMap);
+    }, [cartItems]); // Se ejecuta cada vez que el carrito cambia
 
     const plantsArray = [
         {
@@ -293,16 +307,38 @@ function ProductList({ onHomeClick }) {
                 </div>
                 <div style={styleObjUl}>
                     <div><a href="#" onClick={handlePlantsClick} style={styleA}>Plants</a></div>
-                    <div>
+                    <div className="cart-section" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <a href="#" onClick={handleCartClick} style={styleA}>
-                            <h1 className='cart'>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="IconChangeColor" height="68" width="68">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 256 256"
+                                    height="50"
+                                    width="50"
+                                    style={{ display: 'block' }}
+                                >
                                     <rect width="156" height="156" fill="none"></rect>
                                     <circle cx="80" cy="216" r="12"></circle>
                                     <circle cx="184" cy="216" r="12"></circle>
-                                    <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" id="mainIconPathAttribute"></path>
+                                    <path d="M42.3,72H221.7l-26.4,92.4A15.9,15.9,0,0,1,179.9,176H84.1a15.9,15.9,0,0,1-15.4-11.6L32.5,37.8A8,8,0,0,0,24.8,32H8" fill="none" stroke="#faf9f9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                                 </svg>
-                            </h1>
+                                {totalItems > 0 && (
+                                    <span style={{
+                                        backgroundColor: '#ff4444',
+                                        color: 'white',
+                                        borderRadius: '50%',
+                                        padding: '4px 10px',
+                                        fontSize: '16px',
+                                        fontWeight: 'bold',
+                                        border: '2px solid white',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                        minWidth: '28px',
+                                        textAlign: 'center',
+                                    }}>
+                                        {totalItems}
+                                    </span>
+                                )}
+                            </div>
                         </a>
                     </div>
                 </div>
