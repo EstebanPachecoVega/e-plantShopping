@@ -1,32 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux'; // Para despachar acciones de Redux
-import { addItem } from './CartSlice';    // Acción importada desde CartSlice
-import { useSelector } from 'react-redux'; // Agregar esta línea
+import { useDispatch, useSelector } from 'react-redux';
+import { addItem } from './CartSlice';
 import './ProductList.css';
 import CartItem from './CartItem';
 
 function ProductList({ onHomeClick }) {
     const dispatch = useDispatch();
-    const cartItems = useSelector(state => state.cart.items); // Agregar esta línea
 
-    // Calcular el total de items en el carrito
-    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+    // Acceder al estado del carrito desde Redux
+    const cartItems = useSelector(state => state.cart.items);
 
-    // Estado local para saber qué productos se han añadido (clave: nombre, valor: true/false)
+    // Calcular la cantidad total de artículos en el carrito
+    const calculateTotalQuantity = () => {
+        return cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
+    };
+
+    const totalItems = calculateTotalQuantity();
+
+    // Estado local para saber qué productos se han añadido
     const [addedToCart, setAddedToCart] = useState({});
 
-    // Estado para controlar la visualización del carrito y la lista de plantas
+    // Estado para controlar la visualización
     const [showCart, setShowCart] = useState(false);
     const [showPlants, setShowPlants] = useState(false);
 
+    // Sincronizar el estado local con Redux cuando el carrito cambie
     useEffect(() => {
-        // Crear un objeto con todos los items que están en el carrito
         const cartItemsMap = {};
         cartItems.forEach(item => {
             cartItemsMap[item.name] = true;
         });
         setAddedToCart(cartItemsMap);
-    }, [cartItems]); // Se ejecuta cada vez que el carrito cambia
+    }, [cartItems]);
 
     const plantsArray = [
         {
@@ -281,14 +286,8 @@ function ProductList({ onHomeClick }) {
 
     // Función para añadir al carrito (Redux + estado local)
     const handleAddToCart = (plant) => {
-        // 1. Despachar la acción de Redux para añadir el producto al carrito global
+        // Despachar la acción addItem para agregar el producto al carrito en Redux
         dispatch(addItem(plant));
-
-        // 2. Actualizar el estado local para marcar este producto como añadido
-        setAddedToCart((prevState) => ({
-            ...prevState,
-            [plant.name]: true, // Marcamos el producto como añadido
-        }));
     };
 
     return (
@@ -368,8 +367,8 @@ function ProductList({ onHomeClick }) {
                                             <button
                                                 className="product-button"
                                                 onClick={() => handleAddToCart(plant)}
-                                                disabled={isAdded} // Deshabilitar si ya fue añadido
-                                                style={isAdded ? { opacity: 0.6, cursor: 'default' } : {}}
+                                                disabled={isAdded}
+                                                style={isAdded ? { opacity: 0.6, cursor: 'default', backgroundColor: '#808080' } : {}}
                                             >
                                                 {isAdded ? 'Added to Cart ✓' : 'Add to Cart'}
                                             </button>
